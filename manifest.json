@@ -3,15 +3,18 @@
 
   "name": "Github Comment Tracker",
   "description": "Tracks resolved / unresolved state of comments on github pull requests",
-  "version": "1.0",
+  "version": "1.0.1",
 
   "permissions": [
-    "https://github.com/"
+    "https://github.com/",
+    "storage"
   ],
 
   "content_scripts": [{
     "matches": ["*://github.com/*/pull/*"],
-    "js": ["jquery-2.1.0.min.js", "underscore-min.js", "parse-1.3.0.min.js", "tracker.js"],
+    "js": ["jquery-2.1.0.min.js", "underscore-min.js", "parse-1.3.0.min.js", "waitForKeyElements.js", "tracker.js"],
     "css": ["main.css"]
-  }]
+  }],
+
+  "options_page": "options.html"
 }

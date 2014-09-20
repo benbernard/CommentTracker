@@ -3,7 +3,10 @@
 // @match https://github.com/*
 // ==/UserScript==
 
+// Other file forwarders
 var Parse;
+var waitForKeyElements;
+
 var findAllThreads = function () {
   var threads = [];
 
@@ -14,7 +17,7 @@ var findAllThreads = function () {
       threads.push({
         id: firstCommentChild.id,
         comments: childComments,
-        lastCommentId: childComments.last().id,
+        lastCommentId: childComments.last()[0].id,
       });
     }
   });
@@ -32,15 +35,113 @@ var findAllThreads = function () {
   return threads;
 };
 
-var main = function () {
-  Parse.initialize("af7O3YCdgoc17ZhLj7uGFypfEvzSYMphi7XbeQCK", "giDSblA98q6dM6aCY0WTJZWBeWGoUDcPMbaVw31H");
-  CommentTracker = Parse.Object.extend('CommentTracker');
+var checkThreads = function () {
+  var newThreads = findAllThreads();
+  if (_.isEqual(_.pluck(newThreads, 'id'), _.pluck(allThreads, 'id'))) {
+    if (_.isEqual(_.pluck(newThreads, 'lastCommentId'), _.pluck(allThreads, 'lastCommentId'))) {
+      return;
+    }
+  }
+  resetManipulations();
+};
 
-  var allThreads = findAllThreads();
+var resetManipulations = function () {
+  allThreads = findAllThreads();
 
   annotateWithParseInfo(allThreads).then(function () {
-    _.each(allThreads, updateThread);
+    _.each(allThreads, function (info) { updateThread(info, {suppressMergeUpdate: true}) });
+  }).then(function () {
+    expandUnresolvedThreads();
+    updateMergeButton();
   });
+}
+
+var CommentTracker;
+var Settings;
+var appSettings;
+
+var main = function () {
+  chrome.storage.sync.get({
+    polling: true
+  }, function (items) {
+    Parse.initialize("af7O3YCdgoc17ZhLj7uGFypfEvzSYMphi7XbeQCK", "giDSblA98q6dM6aCY0WTJZWBeWGoUDcPMbaVw31H");
+    CommentTracker = Parse.Object.extend('CommentTracker');
+    Settings = Parse.Object.extend('Settings');
+
+    resetManipulations();
+
+    waitForKeyElements('.comment', checkThreads);
+
+    if (items.polling) {
+      new Parse.Query(Settings).get("bdWmF0aC6c").then(function (settings) {
+        appSettings = settings;
+        setInterval(resetManipulations, appSettings.get('pollInterval'));
+      });
+    }
+  });
+};
+
+var expandUnresolvedThreads =  function () {
+  _.each(allThreads, function (info) {
+    if (!info.resolved) {
+      var id = info.id;
+      var elem = $('#' + id).first();
+      var container = elem.parents('.outdated-diff-comment-container');
+      if (container.length > 0) {
+        container.removeClass('closed').addClass('open');
+      }
+    }
+  });
+};
+
+var allThreads;
+var initalCanBeMerged = false;
+
+var allThreadsResolved = function () {
+  return _.all(allThreads, function (info) {
+    return info.resolved;
+  });
+};
+
+var updateMergeButton = function () {
+  if (!initalCanBeMerged) {
+    initalCanBeMerged = $('.merge-branch-action').hasClass('primary');
+  }
+  $('.comment-track-status').remove();
+
+  if (initalCanBeMerged) {
+    if (allThreadsResolved()) {
+      // Make button green
+      $('.merge-branch-action').addClass('primary');
+      $('.branch-action').addClass('branch-action-state-clean').removeClass('branch-action-state-unstable');
+      $('.merge-branch-heading').text('This pull request can be automatically merged.');
+      $('.branch-status').remove();
+    } else {
+      // Make button grey
+      $('.merge-branch-action').removeClass('primary');
+      $('.branch-action').removeClass('branch-action-state-clean').addClass('branch-action-state-unstable');
+      $('.merge-branch-heading').text('Merge with caution!');
+      $('.branch-action-body').prepend(
+        '<div class="branch-status comment-track-status edit-comment-hide status-failure">' +
+        '  <span class="build-status-description">' +
+        '    <span class="octicon octicon-x"></span>' +
+        '    <strong>Warning</strong>' +
+        '      — You have unresolved comments!' +
+        '  </span>' +
+        '</div>'
+      );
+    }
+  } else {
+    if (!allThreadsResolved()) {
+      $('.branch-status').append(
+        '  <span class="build-status-description comment-track-status">' +
+        '    <span class="octicon octicon-x"></span>' +
+        '    <strong>Warning</strong>' +
+        '      — You have unresolved comments!' +
+        '  </span>'
+      );
+    }
+  }
 };
 
 var annotateWithParseInfo = function (allThreads) {
@@ -53,15 +154,13 @@ var annotateWithParseInfo = function (allThreads) {
       var id = result.get('commentId');
       var info = _.findWhere(allThreads, {id: id});
       if (info) {
-        info.resolved = result.get('resolved');
+        info.resolved = result.get('resolved') && result.get('lastCommentSeen') === info.lastCommentId;
         info.lastCommentSeen = result.get('lastCommentSeen');
         info.tracker = result;
       }
     });
   });
 };
-
-var CommentTracker;
 
 var makeButton = function (elem, threadInfo) {
   $(elem).find('.comment-track-action').remove();
@@ -96,13 +195,15 @@ var makeButton = function (elem, threadInfo) {
       tracker.save();
 
       threadInfo.resolved = true;
+      threadInfo.tracker = tracker;
 
       updateThread(threadInfo);
     });
   }
 };
 
-var updateThread = function (info) {
+var updateThread = function (info, options) {
+  options = options || {};
   var id = info.id;
   var elem = $('#' + id).first();
 
@@ -113,6 +214,10 @@ var updateThread = function (info) {
     });
   } else {
     makeButton(elem, info);
+  }
+
+  if (!options.suppressMergeUpdate) {
+    updateMergeButton();
   }
 };
 
