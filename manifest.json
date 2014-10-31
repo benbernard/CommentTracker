@@ -11,7 +11,7 @@
   ],
 
   "content_scripts": [{
-    "matches": ["*://github.com/*/pull/*"],
+    "matches": ["*://github.com/*/pull*"],
     "js": ["jquery-2.1.0.min.js", "underscore-min.js", "parse-1.3.0.min.js", "waitForKeyElements.js", "tracker.js"],
     "css": ["main.css"]
   }],
