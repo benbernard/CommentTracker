@@ -167,7 +167,7 @@ var makeButton = function (elem, threadInfo) {
 
   var string;
   if (threadInfo.resolved) {
-    string = '<a class="octicon octicon-x comment-track-action comment-track-unresolve">&nbsp;Mark Unresolved</a>';
+    string = '<span class="octicon comment-track-action comment-track-unresolve"></span>';
     $(elem).find('.timeline-comment-actions').prepend(string);
 
     $(elem).find('.comment-track-unresolve').on('click', function () {
@@ -182,7 +182,7 @@ var makeButton = function (elem, threadInfo) {
       updateThread(threadInfo);
     });
   } else {
-    string = '<a class="octicon octicon-check comment-track-action comment-track-resolve">&nbsp;Resolve Thread</a>';
+    string = '<span class="octicon comment-track-action comment-track-resolve"></span>';
     $(elem).find('.timeline-comment-actions').prepend(string)
     $(elem).find('.comment-track-resolve').on('click', function (event) {
       event.preventDefault();
