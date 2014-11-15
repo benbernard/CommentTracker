@@ -3,7 +3,7 @@
 
   "name": "Github Comment Tracker",
   "description": "Tracks resolved / unresolved state of comments on github pull requests",
-  "version": "1.1.0",
+  "version": "1.1.1",
 
   "permissions": [
     "https://github.com/",

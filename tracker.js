@@ -61,6 +61,7 @@ var Settings;
 var appSettings;
 
 var main = function () {
+  /* global chrome */
   chrome.storage.sync.get({
     polling: true
   }, function (items) {
@@ -70,7 +71,12 @@ var main = function () {
 
     resetManipulations();
 
-    waitForKeyElements('.comment', checkThreads);
+    // waitForKeyElements will trigger for *each* changed/added element.
+    // Debounce both to only call checkThreads once, and to call with a slight
+    // delay for better compatiblity with the WideGithub extension:
+    // https://chrome.google.com/webstore/detail/wide-github/kaalofacklcidaampbokdplbklpeldpj
+    var debouncedCheckThreads = _.debounce(checkThreads, 100);
+    waitForKeyElements('.comment', debouncedCheckThreads);
 
     if (items.polling) {
       new Parse.Query(Settings).get("bdWmF0aC6c").then(function (settings) {
@@ -170,7 +176,7 @@ var makeButton = function (elem, threadInfo) {
     string = '<span class="octicon comment-track-action comment-track-unresolve"></span>';
     $(elem).find('.timeline-comment-actions').prepend(string);
 
-    $(elem).find('.comment-track-unresolve').on('click', function () {
+    $(elem).find('.comment-track-unresolve').on('click', function (event) {
       event.preventDefault();
       var tracker = threadInfo.tracker;
       tracker.set('resolved', false);
