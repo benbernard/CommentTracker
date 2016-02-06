@@ -49,7 +49,7 @@ var resetManipulations = function () {
   allThreads = findAllThreads();
 
   annotateWithParseInfo(allThreads).then(function () {
-    _.each(allThreads, function (info) { updateThread(info, {suppressMergeUpdate: true}) });
+    _.each(allThreads, function (info) { updateThread(info, {suppressMergeUpdate: true}) }); // no semi
   }).then(function () {
     expandUnresolvedThreads();
     updateMergeButton();
