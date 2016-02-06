@@ -49,12 +49,12 @@ var resetManipulations = function () {
   allThreads = findAllThreads();
 
   annotateWithParseInfo(allThreads).then(function () {
-    _.each(allThreads, function (info) { updateThread(info, {suppressMergeUpdate: true}) }); // no semi
+    _.each(allThreads, function (info) { updateThread(info, {suppressMergeUpdate: true}); });
   }).then(function () {
     expandUnresolvedThreads();
     updateMergeButton();
   });
-}
+};
 
 var CommentTracker;
 var Settings;
@@ -189,7 +189,7 @@ var makeButton = function (elem, threadInfo) {
     });
   } else {
     string = '<span class="octicon comment-track-action comment-track-resolve"></span>';
-    $(elem).find('.timeline-comment-actions').prepend(string)
+    $(elem).find('.timeline-comment-actions').prepend(string);
     $(elem).find('.comment-track-resolve').on('click', function (event) {
       event.preventDefault();
       var tracker = threadInfo.tracker || new CommentTracker();
