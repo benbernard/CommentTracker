@@ -49,12 +49,12 @@ var resetManipulations = function () {
   allThreads = findAllThreads();
 
   annotateWithParseInfo(allThreads).then(function () {
-    _.each(allThreads, function (info) { updateThread(info, {suppressMergeUpdate: true}) }); // no semi
+    _.each(allThreads, function (info) { updateThread(info, {suppressMergeUpdate: true}); });
   }).then(function () {
     expandUnresolvedThreads();
     updateMergeButton();
   });
-}
+};
 
 var CommentTracker;
 var Settings;
@@ -111,40 +111,38 @@ var allThreadsResolved = function () {
 
 var updateMergeButton = function () {
   if (!initalCanBeMerged) {
-    initalCanBeMerged = $('.merge-branch-action').hasClass('primary');
+    initalCanBeMerged = $('.js-merge-branch-action').hasClass('btn-primary');
   }
   $('.comment-track-status').remove();
 
   if (initalCanBeMerged) {
     if (allThreadsResolved()) {
       // Make button green
-      $('.merge-branch-action').addClass('primary');
-      $('.branch-action').addClass('branch-action-state-clean').removeClass('branch-action-state-unstable');
-      $('.merge-branch-heading').text('This pull request can be automatically merged.');
-      $('.branch-status').remove();
+      $('.js-merge-branch-action').addClass('btn-primary');
+      $('.branch-action').addClass('branch-action-state-clean').removeClass('branch-action-state-dirty');
+      $('.status-heading').text('This pull request can be automatically merged.');
+      $('.status-meta').text('Merging can be performed automatically.');
+      $('.branch-action-item-icon').removeClass('completeness-indicator-problem').addClass('completeness-indicator-success').html('<svg aria-hidden="true" class="octicon octicon-alert" height="16" role="img" version="1.1" viewBox="0 0 12 16" width="12"><path d="M12 5L4 13 0 9l1.5-1.5 2.5 2.5 6.5-6.5 1.5 1.5z"></path></svg>');
     } else {
       // Make button grey
-      $('.merge-branch-action').removeClass('primary');
-      $('.branch-action').removeClass('branch-action-state-clean').addClass('branch-action-state-unstable');
-      $('.merge-branch-heading').text('Merge with caution!');
-      $('.branch-action-body').prepend(
-        '<div class="branch-status comment-track-status edit-comment-hide status-failure">' +
-        '  <span class="build-status-description">' +
-        '    <span class="octicon octicon-x"></span>' +
-        '    <strong>Warning</strong>' +
-        '      — You have unresolved comments!' +
-        '  </span>' +
-        '</div>'
-      );
+      $('.js-merge-branch-action').removeClass('btn-primary');
+      $('.branch-action').removeClass('branch-action-state-clean').addClass('branch-action-state-dirty');
+      $('.status-heading').text('Merge with caution!');
+      $('.status-meta').text('You have unresolved comments!');
+      $('.branch-action-item-icon').removeClass('completeness-indicator-success').addClass('completeness-indicator-problem').html('<svg aria-hidden="true" class="octicon octicon-alert" height="16" role="img" version="1.1" viewBox="0 0 16 16" width="16"><path d="M15.72 12.5l-6.85-11.98C8.69 0.21 8.36 0.02 8 0.02s-0.69 0.19-0.87 0.5l-6.85 11.98c-0.18 0.31-0.18 0.69 0 1C0.47 13.81 0.8 14 1.15 14h13.7c0.36 0 0.69-0.19 0.86-0.5S15.89 12.81 15.72 12.5zM9 12H7V10h2V12zM9 9H7V5h2V9z"></path></svg>');
     }
   } else {
     if (!allThreadsResolved()) {
-      $('.branch-status').append(
-        '  <span class="build-status-description comment-track-status">' +
-        '    <span class="octicon octicon-x"></span>' +
-        '    <strong>Warning</strong>' +
-        '      — You have unresolved comments!' +
-        '  </span>'
+      $('.merge-message').before(
+        '<div class="branch-action-item comment-track-status">' +
+        '    <div class="branch-action-item-icon completeness-indicator completeness-indicator-problem">' +
+        '      <svg aria-hidden="true" class="octicon octicon-alert" height="16" role="img" version="1.1" viewBox="0 0 16 16" width="16"><path d="M15.72 12.5l-6.85-11.98C8.69 0.21 8.36 0.02 8 0.02s-0.69 0.19-0.87 0.5l-6.85 11.98c-0.18 0.31-0.18 0.69 0 1C0.47 13.81 0.8 14 1.15 14h13.7c0.36 0 0.69-0.19 0.86-0.5S15.89 12.81 15.72 12.5zM9 12H7V10h2V12zM9 9H7V5h2V9z"></path></svg>' +
+        '    </div>' +
+        '    <h4 class="status-heading">This branch has unresolved comments</h4>' +
+        '      <span class="status-meta">' +
+        '        See above for red unresolved comments' +
+        '      </span>' +
+        '  </div>'
       );
     }
   }
@@ -189,7 +187,7 @@ var makeButton = function (elem, threadInfo) {
     });
   } else {
     string = '<span class="octicon comment-track-action comment-track-resolve"></span>';
-    $(elem).find('.timeline-comment-actions').prepend(string)
+    $(elem).find('.timeline-comment-actions').prepend(string);
     $(elem).find('.comment-track-resolve').on('click', function (event) {
       event.preventDefault();
       var tracker = threadInfo.tracker || new CommentTracker();
