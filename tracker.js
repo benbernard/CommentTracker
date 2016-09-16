@@ -10,8 +10,8 @@ var waitForKeyElements;
 var findAllThreads = function () {
   var threads = [];
 
-  $('#discussion_bucket .line-comments .comment-holder').each(function () {
-    var childComments = $(this).children('.comment');
+  $('#discussion_bucket .js-line-comments .js-comments-holder').each(function () {
+    var childComments = $(this).children('.js-comment');
     if (childComments.length > 0) {
       var firstCommentChild = childComments.first()[0];
       threads.push({
@@ -167,14 +167,20 @@ var annotateWithParseInfo = function (allThreads) {
 };
 
 var makeButton = function (elem, threadInfo) {
-  $(elem).find('.comment-track-action').remove();
+  var $elem = $(elem);
+  $elem.find('.comment-track-action').remove();
+
+  var actionSelector = '.review-comment-contents';
+  if ($elem.find(actionSelector).length === 0) {
+    actionSelector = '.timeline-comment-actions';
+  }
 
   var string;
   if (threadInfo.resolved) {
     string = '<span class="octicon comment-track-action comment-track-unresolve"></span>';
-    $(elem).find('.timeline-comment-actions').prepend(string);
+    $elem.find(actionSelector).prepend(string);
 
-    $(elem).find('.comment-track-unresolve').on('click', function (event) {
+    $elem.find('.comment-track-unresolve').on('click', function (event) {
       event.preventDefault();
       var tracker = threadInfo.tracker;
       tracker.set('resolved', false);
@@ -187,8 +193,9 @@ var makeButton = function (elem, threadInfo) {
     });
   } else {
     string = '<span class="octicon comment-track-action comment-track-resolve"></span>';
-    $(elem).find('.timeline-comment-actions').prepend(string);
-    $(elem).find('.comment-track-resolve').on('click', function (event) {
+    $elem.find(actionSelector).prepend(string);
+
+    $elem.find('.comment-track-resolve').on('click', function (event) {
       event.preventDefault();
       var tracker = threadInfo.tracker || new CommentTracker();
 
@@ -211,8 +218,8 @@ var updateThread = function (info, options) {
   var id = info.id;
   var elem = $('#' + id).first();
 
-  if (id.match(/^discussion_/)) {
-    var threadComments = $(elem).parents('.comment-holder').children('.comment');
+  if (!id.match(/^issuecomment/)) {
+    var threadComments = $(elem).parents('.js-comments-holder').children('.js-comment');
     threadComments.each(function () {
       makeButton(this, info);
     });
