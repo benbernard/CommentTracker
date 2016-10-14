@@ -92,7 +92,7 @@ var expandUnresolvedThreads =  function () {
     if (!info.resolved) {
       var id = info.id;
       var elem = $('#' + id).first();
-      var container = elem.parents('.outdated-diff-comment-container');
+      var container = elem.parents('.outdated-comment');
       if (container.length > 0) {
         container.removeClass('closed').addClass('open');
       }
