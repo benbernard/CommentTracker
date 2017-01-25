@@ -65,7 +65,8 @@ var main = function () {
   chrome.storage.sync.get({
     polling: true
   }, function (items) {
-    Parse.initialize("af7O3YCdgoc17ZhLj7uGFypfEvzSYMphi7XbeQCK", "giDSblA98q6dM6aCY0WTJZWBeWGoUDcPMbaVw31H");
+    Parse.initialize("ghct");
+    Parse.serverURL = 'https://ghct.herokuapp.com/1';
     CommentTracker = Parse.Object.extend('CommentTracker');
     Settings = Parse.Object.extend('Settings');
 
