@@ -6,6 +6,7 @@
 // Other file forwarders
 var Parse;
 var waitForKeyElements;
+var unresolvedComments = new Set();
 
 var findAllThreads = function () {
   var threads = [];
@@ -143,10 +144,12 @@ var updateMergeButton = function () {
         '      <span class="status-meta">' +
         '        See above for red unresolved comments' +
         '      </span>' +
+        '      <lu><li>' + Array.from(unresolvedComments).join('</li><li>') + "</li></lu>" +
         '  </div>'
       );
     }
   }
+  unresolvedComments.clear();
 };
 
 var annotateWithParseInfo = function (allThreads) {
@@ -211,6 +214,11 @@ var makeButton = function (elem, threadInfo) {
 
       updateThread(threadInfo);
     });
+
+    var content = $elem.find(actionSelector)[0].innerText.trim();
+    if (content != "") {
+      unresolvedComments.add(content);
+    }
   }
 };
 
