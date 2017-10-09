@@ -32,6 +32,14 @@ var findAllThreads = function () {
     }
   });
 
+  $('#files .review-comment').each(function () {
+    threads.push({
+      id: this.id,
+      comments: $(this),
+      lastCommentId: this.id,
+    });
+  });
+
   return threads;
 };
 
