@@ -6,7 +6,7 @@
 // Other file forwarders
 var Parse;
 var waitForKeyElements;
-var unresolvedComments = new Set();
+var unresolvedCommentsMap = {};
 
 var findAllThreads = function () {
   var threads = [];
@@ -143,6 +143,15 @@ var updateMergeButton = function () {
     }
   } else {
     if (!allThreadsResolved()) {
+
+      //map to array of values
+      var unresolvedCommentsArray = []
+      for (var key in unresolvedCommentsMap) {
+        if (unresolvedCommentsMap.hasOwnProperty(key)) {
+          unresolvedCommentsArray.push(unresolvedCommentsMap[key])
+        }
+      }
+
       var commentStatus =
         '<div class="branch-action-item comment-track-status">' +
         '    <div class="branch-action-item-icon completeness-indicator completeness-indicator-problem">' +
@@ -152,7 +161,7 @@ var updateMergeButton = function () {
         '      <span class="status-meta">' +
         '        See above for red unresolved comments' +
         '      </span>' +
-        '      <lu><li>' + Array.from(unresolvedComments).join('</li><li>') + "</li></lu>" +
+        '      <lu><li>' + unresolvedCommentsArray.join('</li><li>') + "</li></lu>" +
         '  </div>';
 
       //discussions tab
@@ -162,7 +171,6 @@ var updateMergeButton = function () {
       $('#files').after(commentStatus);
     }
   }
-  unresolvedComments.clear();
 };
 
 var annotateWithParseInfo = function (allThreads) {
@@ -191,6 +199,7 @@ var makeButton = function (elem, threadInfo) {
   if ($elem.find(actionSelector).length === 0) {
     actionSelector = '.timeline-comment-actions';
   }
+  delete unresolvedCommentsMap[threadInfo.id];
 
   var string;
   if (threadInfo.resolved) {
@@ -212,6 +221,11 @@ var makeButton = function (elem, threadInfo) {
     string = '<span class="octicon comment-track-action comment-track-resolve"></span>';
     $elem.find(actionSelector).prepend(string);
 
+    var content = $elem.find(actionSelector)[0].innerText.trim();
+    if (content != "") {
+      unresolvedCommentsMap[threadInfo.id] = content;
+    }
+
     $elem.find('.comment-track-resolve').on('click', function (event) {
       event.preventDefault();
       var tracker = threadInfo.tracker || new CommentTracker();
@@ -227,11 +241,6 @@ var makeButton = function (elem, threadInfo) {
 
       updateThread(threadInfo);
     });
-
-    var content = $elem.find(actionSelector)[0].innerText.trim();
-    if (content != "") {
-      unresolvedComments.add(content);
-    }
   }
 };
 
