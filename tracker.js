@@ -12,7 +12,7 @@ var findAllThreads = function () {
   var threads = [];
 
   $('#discussion_bucket .js-line-comments .js-comments-holder').each(function () {
-    var childComments = $(this).children('.js-comment');
+    var childComments = $(this).find('.js-comment[id]');
     if (childComments.length > 0) {
       var firstCommentChild = childComments.first()[0];
       threads.push({
@@ -249,13 +249,13 @@ var updateThread = function (info, options) {
   var id = info.id;
   var elem = $('#' + id).first();
 
-  if (!id.match(/^issuecomment/)) {
-    var threadComments = $(elem).parents('.js-comments-holder').children('.js-comment');
+  if (id.match(/^issuecomment/)) {
+    makeButton(elem, info);
+  } else {
+    var threadComments = $(elem).parents('.js-comments-holder').find('.js-comment[id]');
     threadComments.each(function () {
       makeButton(this, info);
     });
-  } else {
-    makeButton(elem, info);
   }
 
   if (!options.suppressMergeUpdate) {
