@@ -221,6 +221,7 @@ var makeButton = function (elem, threadInfo) {
     string = '<span class="octicon comment-track-action comment-track-resolve"></span>';
     $elem.find(actionSelector).prepend(string);
 
+    // TODO: fix this
     var content = $elem.find(actionSelector)[0].innerText.trim();
     if (content != "") {
       unresolvedCommentsMap[threadInfo.id] = content;
