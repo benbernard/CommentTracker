@@ -56,6 +56,7 @@ var checkThreads = function () {
 
 var resetManipulations = function () {
   allThreads = findAllThreads();
+  unresolvedCommentsMap = {};
 
   annotateWithParseInfo(allThreads).then(function () {
     _.each(allThreads, function (info) { updateThread(info, {suppressMergeUpdate: true}); });
@@ -221,9 +222,14 @@ var makeButton = function (elem, threadInfo) {
     string = '<span class="octicon comment-track-action comment-track-resolve"></span>';
     $elem.find(actionSelector).prepend(string);
 
-    // TODO: fix this
     var content = $elem.find(actionSelector)[0].innerText.trim();
-    if (content != "") {
+    if (content === '') {
+      // If we didn't find any content on the actionSelect, its probably a
+      // timeline-comment and the content is in the comment-body
+      content = $elem.find('.comment-body')[0].innerText.trim();
+    }
+
+    if (content != '') {
       unresolvedCommentsMap[threadInfo.id] = content;
     }
 
