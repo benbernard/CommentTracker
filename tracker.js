@@ -11,8 +11,8 @@ var unresolvedCommentsMap = {};
 var findAllThreads = function () {
   var threads = [];
 
-  $('#discussion_bucket .js-line-comments .js-comments-holder').each(function () {
-    var childComments = $(this).find('.js-comment[id]');
+  $('.timeline-comment-wrapper .js-comments-holder').each(function () {
+    var childComments = $(this).find('.review-comment[id]');
     if (childComments.length > 0) {
       var firstCommentChild = childComments.first()[0];
       threads.push({
@@ -23,7 +23,7 @@ var findAllThreads = function () {
     }
   });
 
-  $('#discussion_bucket .timeline-comment-wrapper .timeline-comment.js-comment').each(function () {
+  $('.timeline-comment-group').each(function () {
     if (this.id && this.id.match(/^issuecomment/)) {
       threads.push({
         id: this.id,
@@ -105,7 +105,7 @@ var expandUnresolvedThreads =  function () {
       var elem = $('#' + id).first();
       var container = elem.parents('.outdated-comment');
       if (container.length > 0) {
-        container.removeClass('closed').addClass('open');
+        container.attr('open', '1')
       }
     }
   });
@@ -196,9 +196,9 @@ var makeButton = function (elem, threadInfo) {
   var $elem = $(elem);
   $elem.find('.comment-track-action').remove();
 
-  var actionSelector = '.review-comment-contents';
+  var actionSelector = '.unminimized-comment .review-comment-contents';
   if ($elem.find(actionSelector).length === 0) {
-    actionSelector = '.timeline-comment-actions';
+    actionSelector = '.unminimized-comment .timeline-comment-actions';
   }
   delete unresolvedCommentsMap[threadInfo.id];
 
@@ -259,7 +259,7 @@ var updateThread = function (info, options) {
   if (id.match(/^issuecomment/)) {
     makeButton(elem, info);
   } else {
-    var threadComments = $(elem).parents('.js-comments-holder').find('.js-comment[id]');
+    var threadComments = $(elem).parents('.js-comments-holder').find('.review-comment[id]');
     threadComments.each(function () {
       makeButton(this, info);
     });
